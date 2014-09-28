@@ -1,20 +1,28 @@
+var contextMenu = require("sdk/context-menu");
 var data = require("sdk/self").data;
-
 var text_entry = require("sdk/panel").Panel({
 	contentURL: data.url("text-entry.html"),
 	contentScriptFile: data.url("get-text.js")
 });
 
-require("sdk/ui/button/action").ActionButton({
-	id: "show-panel",
-	label: "Show Panel",
-	icon: {
-		"16" : "./icon-16.png",
-		"32" : "./icon-32.png",
-		"64" : "./icon-64.png"
-	},
-	onClick : handlerClick
+
+
+var menuItem = contextMenu.Item({
+  label: "Send text to server",
+  context: contextMenu.SelectionContext(),
+  contentScript: 'self.on("click", function () {' +
+                 '  var text = window.getSelection().toString();' +
+                 '  self.postMessage(text);' +
+                 '});',
+  onMessage: function (selectionText) {
+    //console.log(selectionText);
+
+	text_entry.show();
+
+  }
 });
+
+
 
 
 function handlerClick(state) {
@@ -26,7 +34,7 @@ text_entry.on("show", function(){
 });
 
 
-text_entry.port.on("text-entered", function(text){
-	console.log(text);
+text_entry.port.on("text-entered", function(user, password){
+	console.log(user +" - - - "+ password);
 	text_entry.hide();
 });
